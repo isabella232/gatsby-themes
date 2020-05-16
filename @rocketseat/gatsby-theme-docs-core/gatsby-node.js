@@ -25,6 +25,9 @@ exports.createPages = (
               id
               relativePath
               childMdx {
+                frontmatter {
+                  next
+                }
                 fields {
                   slug
                 }
@@ -86,37 +89,32 @@ exports.createPages = (
     docs.forEach(doc => {
       const {
         childMdx: {
+          frontmatter: { next },
           fields: { slug },
         },
         relativePath,
       } = doc.node;
 
-      let githubEditUrl;
+      const githubEditUrl =
+        githubUrl &&
+        `${githubUrl}/tree/master/${baseDir}/${docsPath}/${relativePath}`;
 
-      if (githubUrl) {
-        githubEditUrl = path.join(
-          githubUrl,
-          'tree',
-          path.join('master', baseDir, docsPath),
-          relativePath,
-        );
-      }
-
-      const pageLink = slug.slice(0, slug.length - 1);
       const currentPageIndex = listOfItems.findIndex(
-        page => page.link === pageLink,
+        page => page.link === slug,
       );
 
-      const prev = listOfItems[currentPageIndex - 1];
-      const next = listOfItems[currentPageIndex + 1];
+      const prevItem = listOfItems[currentPageIndex - 1];
+      const nextItem = next
+        ? listOfItems.find(item => item.link === next)
+        : listOfItems[currentPageIndex + 1];
 
       createPage({
         path: slug,
         component: docsTemplate,
         context: {
           slug,
-          prev,
-          next,
+          prev: prevItem,
+          next: nextItem,
           githubEditUrl,
         },
       });
